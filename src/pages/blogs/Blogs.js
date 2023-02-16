@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
   Fragment
 } from 'react';
@@ -13,20 +14,34 @@ import {
   ListItemText,
   Divider,
   Button} from '@mui/material';
+  import axios from 'axios';
 
 import PostOptions from './PostOptions';
 import CreatePostFormDialog from './CreatePost';
+import { useAppContext } from '../../context/Hooks';
+import { getSuccessGettingAllPost } from '../../state/actions';
 
 function Blogs() {
+
+  // STATES
   const [isOpen, setIsOpen] = useState(false);
-  const [post, setPost] = useState('');
-  
+  const {state: {postList}, dispatch} = useAppContext();
+  console.log(postList);
+  // HOOKS
+  useEffect(() => {
+    const getPosts = async () => {
+      const {data} = await axios.get('http://localhost:3200/posts');
+      dispatch(getSuccessGettingAllPost(data))
+     }
+    getPosts();
+    console.log('Use Effect from Blogs page?')
+  }, []);
+
   const openCreatePostDialog = () => {
     setIsOpen(true);
   }
-  const responseHandlerDialog = (response) => {
+  const responseHandlerDialog = () => {
     setIsOpen(false);
-    setPost(response);
   }
 
   return (
@@ -40,29 +55,34 @@ function Blogs() {
         <List
           sx={{ width: '100%', maxWidth: '60%', bgcolor: 'background.paper' }}
         >
-          <ListItem alignItems="flex-start">
-            <ListItemAvatar>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            </ListItemAvatar>
-            <ListItemText
-              primary='Title - Post'
-              secondary={
-                <Fragment>
-                  <Typography
-                    sx={{ display: 'inline' }}
-                    component='span'
-                    variant='body2'
-                    color='text.primary'
-                  >
-                    Name - Ali Connors
-                  </Typography>
-                  {` — I'll be in your neighborhood doing errands this…`}
-                </Fragment>
-              }
-            />
-            <PostOptions />
-          </ListItem>
-          <Divider variant="inset" component='li' />
+          {Array.isArray(postList) && postList.map(post => (
+            <div key={post.id}>
+              <ListItem alignItems='flex-start'>
+                <ListItemAvatar>
+                  <Avatar alt='Avatart' src='/static/images/avatar/1.jpg' />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={post.title || 'Empty'}
+                  secondary={
+                    <Fragment>
+                      <Typography
+                        sx={{ display: 'inline' }}
+                        component='span'
+                        variant='body2'
+                        color='text.primary'
+                      >
+                        {post.author}
+                      </Typography>
+                      - {post.text}
+                    </Fragment>
+                  }
+                />
+                <PostOptions post={post}/>
+              </ListItem>
+              <Divider variant='inset' component='li'/>
+            </div>
+          ))
+          }
         </List>
       </Grid>
       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>

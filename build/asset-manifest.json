@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.761756d5.css",
+    "main.js": "/static/js/main.491b613a.js",
+    "static/media/log-navbar.png": "/static/media/log-navbar.0f071cfdbfb6fa0b6eef.png",
+    "static/media/background.jpeg": "/static/media/background.18572b90dbe2415f2f20.jpeg",
+    "static/media/reptile.jpg": "/static/media/reptile.7ab4186592990b5e85bc.jpg",
+    "static/media/react.jpg": "/static/media/react.9f8df3fa37f96fe529b8.jpg",
+    "static/media/javascript-illustration.png": "/static/media/javascript-illustration.45a0e69caea885ad6b08.png",
+    "static/media/nodejs.jpg": "/static/media/nodejs.b01e10974544659b41f6.jpg",
+    "index.html": "/index.html",
+    "main.761756d5.css.map": "/static/css/main.761756d5.css.map",
+    "main.491b613a.js.map": "/static/js/main.491b613a.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.761756d5.css",
+    "static/js/main.491b613a.js"
+  ]
+}

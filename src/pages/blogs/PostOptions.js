@@ -1,27 +1,56 @@
 import {
   Menu,
   MenuItem,
+  Alert,
+  Snackbar
 } from '@mui/material';
 
-import {useState} from 'react';
+import {useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CreatePostFormDialog from './CreatePost';
 import ConfirmDialog from '../../components/dialogs/ConfirmDialog';
+import axios from 'axios';
+import { useAppContext } from '../../context/Hooks';
+import { deletePost, editPost } from '../../state/actions';
 
 const ITEM_HEIGHT = 48;
 
 
 
-function PostOptions() {
+function PostOptions(props) {
+  // STATES
   const [anchorEl, setAnchorEl] = useState(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [post, setPost] = useState('');
+  const [post, setPost] = useState(props.post);
+  const [openNotification, setOpenNotification] = useState(false);
+  const [messageNotification, setMessageNotification] = useState({});
+  const { dispatch } = useAppContext();
   const navigate = useNavigate();
-  
   const open = Boolean(anchorEl);
+
+  // INNER FUNCS
+  const deletePostFunc = async (id) => {
+    try {
+      const {data} = await axios.delete(`http://localhost:3200/posts/${id}`);
+      console.log('post deleted', data);
+      setMessageNotification({
+        severity: 'success',
+        message: 'Post delete successfully!'
+      });
+      dispatch(deletePost(id))
+    } catch (error) {
+      setMessageNotification({
+        severity: 'error',
+        message: 'Something goes wrong trying to delete the post!'
+      })
+    }
+    
+  }
+
+  // HOOKS
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -31,9 +60,8 @@ function PostOptions() {
   };
 
   const handleViewPost = (e) => {
-    console.log('View full post');
     setAnchorEl(null);
-    navigate(`/view-post/idPost`);
+    navigate(`/view-post/${post.id}`);
   }
   const handleEditPost = (e) => {
     console.log('Edit post');
@@ -41,44 +69,41 @@ function PostOptions() {
     setAnchorEl(null);
   }
   const onResponseEditPost = (response) => {
-    setOpenEditDialog(false);
-    if (response == null) {
-      console.log('User cancel to delete the post');
-    } else {
-      console.log('User edited the post');
+    if (response !== null) {
       setPost(response);
+      console.log('User edit the post');
     }
+    setOpenEditDialog(false);
   }
 
   const handleDeletePost = (e) => {
-    console.log('Delete Post')
     setOpenDeleteDialog(true);
     setAnchorEl(null);
   }
+
   const onResponseDeletedPost = (response) => {
-    setOpenDeleteDialog(false);
-    if (response == null) {
-      console.log('User not deleted the post');
-    } else {
+    if (response !== null) {
       console.log('User deleted the post');
+      deletePostFunc(post.id)
     }
-  }  
+    setOpenDeleteDialog(false);
+  }
   return (
     <div>
       <IconButton
-        aria-label="more"
-        id="long-button"
-        aria-controls={open ? "long-menu" : undefined}
-        aria-expanded={open ? "true" : undefined}
-        aria-haspopup="true"
+        aria-label='more'
+        id='long-button'
+        aria-controls={open ? 'long-menu' : undefined}
+        aria-expanded={open ? 'true' : undefined}
+        aria-haspopup='true'
         onClick={handleClick}
       >
         <MoreVertIcon />
       </IconButton>
       <Menu
-        id="long-menu"
+        id='long-menu'
         MenuListProps={{
-          "aria-labelledby": "long-button",
+          'aria-labelledby': 'long-button',
         }}
         anchorEl={anchorEl}
         open={open}
@@ -109,8 +134,11 @@ function PostOptions() {
           Delete
         </MenuItem>
       </Menu>
-      {openEditDialog && <CreatePostFormDialog isOpen={openEditDialog} responseHandlerDialog={onResponseEditPost}/>}
+      {openEditDialog && <CreatePostFormDialog isOpen={openEditDialog} responseHandlerDialog={onResponseEditPost} editMode={true} postToEdit={post}/>}
       {openDeleteDialog && <ConfirmDialog isOpen={openDeleteDialog} responseHandlerDialog={onResponseDeletedPost}/>}
+      <Snackbar open={openNotification} autoHideDuration={5000} onClose={() => setOpenNotification(false)}>
+        <Alert severity={messageNotification.severity}>{messageNotification.message}</Alert>
+      </Snackbar>
     </div>
   );
 }
